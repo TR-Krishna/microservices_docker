@@ -1,15 +1,23 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 
-WORKDIR /app
-COPY ./publish .
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
+#FROM mcr.microsoft.com/dotnet/aspnet:8.0 
+#WORKDIR /app
+#COPY ./publish .
+#EXPOSE 8080
+#ENV ASPNETCORE_URLS=http://+:8080
 # This stage is used to build the service project
-#FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 #ARG BUILD_CONFIGURATION=Release
-#WORKDIR /src
+WORKDIR /src
 #COPY ["DemoOrder.csproj", "."]
 #RUN dotnet restore "./DemoOrder.csproj"
-#COPY . .
+COPY . .
+RUN	dotnet publish -c Release -o /app/publish
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "DemoOrder.dll"]
+
 #WORKDIR "/src/."
 #RUN dotnet build "./DemoOrder.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
